@@ -1,31 +1,23 @@
 /*--------------------------------------------------------------------
-GGR472 LAB 4: Incorporating GIS Analysis into web maps using Turf.js 
+GGR472 LAB 4. By Polina Gorn
 --------------------------------------------------------------------*/
 
-/*--------------------------------------------------------------------
-Step 1: INITIALIZE MAP
---------------------------------------------------------------------*/
-// Define access token
-mapboxgl.accessToken = 'pk.eyJ1IjoicG9saW5hLWdvcm4iLCJhIjoiY201eTZhdDJyMGc1ODJrcTU0ZmVqZDhmeSJ9.b3lqv0gV68Aikf5HHMdIoQ'; //****ADD YOUR PUBLIC ACCESS TOKEN*****
+mapboxgl.accessToken = 'pk.eyJ1IjoicG9saW5hLWdvcm4iLCJhIjoiY201eTZhdDJyMGc1ODJrcTU0ZmVqZDhmeSJ9.b3lqv0gV68Aikf5HHMdIoQ'; 
 
 // Initialize map and edit to your preference
 const map = new mapboxgl.Map({
     container: 'map', // container id in HTML
-    style: 'mapbox://styles/mapbox/light-v11',  // ****ADD MAP STYLE HERE *****
+    style: 'mapbox://styles/mapbox/light-v11',  
     center: [-79.35, 43.70],  // starting point, longitude/latitude
     zoom: 10.6 // starting zoom level
 });
 
 
-/*--------------------------------------------------------------------
-Step 2: VIEW GEOJSON POINT DATA ON MAP
---------------------------------------------------------------------*/
-
-// Create an empty variable to store the GeoJSON data
+// empty variable to store the GeoJSON data
 let viewgeojson;
 
-// Use the fetch method to access the GeoJSON from your online repository
-fetch("https://raw.githubusercontent.com/smith-lg/ggr472-lab4/refs/heads/main/data/pedcyc_collision_06-21.geojson")
+// fetch method to access the GeoJSON from your online repository
+fetch("https://raw.githubusercontent.com/smith-lg/ggr472-lab4/refs/heads/main/data/pedcyc_collision_06-21.geojson") // I ended up fetching the original source because when I referenced my source which was essentially a duplicate of your repository, I would get a 404 error and I did not find a way to work around it other than use a different source for the same data
     .then(response => {
         if (!response.ok) {
             throw new Error('Network response was not ok');
@@ -34,23 +26,20 @@ fetch("https://raw.githubusercontent.com/smith-lg/ggr472-lab4/refs/heads/main/da
     })
     .then(data => {
         viewgeojson = data; // Assign the JSON data to the outer variable
-        console.log(viewgeojson); // Optionally, log the data to the console
 
-        // Wait for the map to load
         map.on('load', () => {
 
-            // Add the GeoJSON data as a source
+            // Adding data as a source
             map.addSource('viewgeojson', {
                 type: 'geojson',
-                data: viewgeojson // Use the fetched GeoJSON data
+                data: viewgeojson // Using the fetched GeoJSON data
             });
 
-            // Create a bounding box around the collision point data
+            // Creating a bounding box around the collision point data
             let envresult = turf.envelope(viewgeojson);
             let bboxscaled = turf.transformScale(envresult, 1.1);
-            console.log(bboxscaled);
 
-            // Extract the coordinates of the scaled bounding box
+            // Extracting the coordinates of the  bounding box
             let bboxcoords = [
                 bboxscaled.geometry.coordinates[0][0][0],
                 bboxscaled.geometry.coordinates[0][0][1],
@@ -58,64 +47,24 @@ fetch("https://raw.githubusercontent.com/smith-lg/ggr472-lab4/refs/heads/main/da
                 bboxscaled.geometry.coordinates[0][2][1],
             ];
 
-            bboxgeojson = {
-                "type": "Feature Collection",
-                "features": [envresult]
-            };
-
-            // Generate a hex grid within the bounding box
+            // Generating a hex grid within the bounding box
             let hexdata = turf.hexGrid(bboxcoords, 0.5, { units: "kilometers" });
 
-            // Add the hex grid to the map
-            map.addSource('hex_data', {
-                type: 'geojson',
-                data: hexdata
-            });
-
-            // map.addLayer({
-            //     id: 'hex_layer',
-            //     type: 'fill',
-            //     source: 'hex_data',
-            //     paint: {
-            //         'fill-color': '#888888',
-            //         'fill-opacity': 0.5
-            //     }
-            // });
-
-            /*--------------------------------------------------------------------
-            Step 4: AGGREGATE COLLISIONS BY HEXGRID
-            --------------------------------------------------------------------*/
-            // Use Turf collect function to collect all '_id' properties from the collision points data for each hexagon
+            // Using Turf collect function to collect all '_id' properties from the collision points data for each hexagon
             let collected = turf.collect(hexdata, viewgeojson, '_id', 'collisions');
-            console.log(collected); // View the collect output in the console
-
-            /*--------------------------------------------------------------------
-            Step 5: FINALIZE YOUR WEB MAP
-            --------------------------------------------------------------------*/
-            // Update the addLayer paint properties for your hexgrid using:
-            // - an expression
-            // - The COUNT attribute
-            // - The maximum number of collisions found in a hexagon
-            // map.setPaintProperty('hex_layer', 'fill-color', [
-            //     'step',
-            //     ['get', 'collisions'],
-            //     '#ffffcc', // Default color
-            //     1, '#ffeda0',
-            //     5, '#feb24c',
-            //     10, '#f03b20'
-            // ]);
-
+           
+            //this loop counts the number of collisions in each hexagon and identifies the hexagon with the biggest number of collisions.
             let collishex = turf.collect(hexdata, viewgeojson, '_id', 'values');
-            let maxcollis = 0;
+            let maxcollis = 0; // we create a dummy variable that will update itself with a bigger value until it reaches a hexagon with the biggest number of collisions
             collishex.features.forEach((feature) => {
-                feature.properties.COUNT = feature.properties.values.length;
+                feature.properties.COUNT = feature.properties.values.length; // the loop calculates the number of collisions (values.length) in each hexagon and stores the number as a new variable COUNT.
                 if (feature.properties.COUNT > maxcollis) {
                     console.log(feature);
-                    maxcollis = feature.properties.COUNT;
+                    maxcollis = feature.properties.COUNT; // and if the COUNT happens to be bigger than the currently saved maxcollis variable, the variable updates itself
                 }
             });
-            console.log(maxcollis);
 
+            //adding the data source of the collision hexgrid and a layer to visualize it
             map.addSource("collishexgrid", {
                 type: "geojson",
                 data: collishex
@@ -128,36 +77,37 @@ fetch("https://raw.githubusercontent.com/smith-lg/ggr472-lab4/refs/heads/main/da
                 paint: {
                     "fill-color": [
                         "step",
-                        ["get", "COUNT"],
-                        "rgba(255, 255, 255, 0)",
-                        1, '#FCD4B8',
-                        10, '#D799A7',
-                        25, '#4E60A4',
-                        maxcollis, "#3A2152"
+                        ["get", "COUNT"], // visualizing the layer using the created COUNT variable
+                        "rgba(255, 255, 255, 0)", //colour for the hex with 0 collisions (transparent)
+                        1, '#FCD4B8', //colour for the hex with 1-9 collisions
+                        10, '#D799A7', //colour for the hex with 10-24 collisions
+                        25, '#4E60A4', //colour for the hex with 25+ collisions
+                        maxcollis, "#3A2152" //colour for the hex with the biggest num of collisions
                     ],
-                    "fill-opacity": 0.8
+                    "fill-opacity": 0.8,
+                    "fill-outline-color": "#000000" // outline for each hex for better visibility of boundaries
                 },
-                filter: ["!=", "COUNT", 0],
+                filter: ["!=", "COUNT", 0], // this filter does not render hexes that show counts = 0, however, i think this contradicts line 81, but deleting either messes up the code, so i am not exactly sure of the logic, but it works... i added this line first to get rid of hexbins overpopulating the map but then i realized i need borders for other values so now if I delete this line all hexbins with outlines will be visible, not just the ones that are more than 0
             });
+            //adding point data layer
             map.addLayer({
                 id: 'coll_layer',
                 type: 'circle',
                 source: 'viewgeojson',
                 paint: {
-                    'circle-radius': 3, // Size of the circles
-                    'circle-color': '#000000', // Fully black color
-                    'circle-opacity': 1, // Fully opaque
-                    'circle-stroke-width': 0 // No outline
+                    'circle-radius': 3,
+                    'circle-color': '#000000', 
+                    'circle-opacity': 1
                 },
                 layout: {
-                    visibility: 'none' // Initially invisible
+                    visibility: 'none' // making the layer initially invisible since the interactivity implies turning the layer on
                 }
             });
+            //setting up an event listener that will show the point data layer upon clicking on the button
             const toggleButton = document.getElementById('toggle-car-layer');
             toggleButton.addEventListener('click', () => {
                 const visibility = map.getLayoutProperty('coll_layer', 'visibility');
-
-                // Toggle layer visibility
+                // connecting toggle layer visibility to the button actions
                 if (visibility === 'visible') {
                     map.setLayoutProperty('coll_layer', 'visibility', 'none');
                     toggleButton.textContent = 'Show Collision Cases';
@@ -166,58 +116,57 @@ fetch("https://raw.githubusercontent.com/smith-lg/ggr472-lab4/refs/heads/main/da
                     toggleButton.textContent = 'Hide Collision Cases';
                 }
             });
-
-            // Add a legend and additional functionality including pop-up windows (optional)
         });
-        // Add a click event listener to the hexagon layer
+        // Adding a click event listener to the hexagon layer
         map.on('click', 'collishexfill', (e) => {
-            // Get the properties of the clicked hexagon
+            // Getting the number of collisions of the clicked hexagon
             const properties = e.features[0].properties;
-            const count = properties.COUNT; // Number of collisions
+            const count = properties.COUNT; 
 
-            // Get the coordinates of the clicked hexagon
+            // Getting the coordinates of the clicked hexagon
             const coordinates = e.lngLat;
 
-            // Fly to the clicked hexagon
+            // Flying to the clicked hexagon and adjusting zoom and animation 
             map.flyTo({
-                center: coordinates, // Center the map on the clicked hexagon
-                zoom: 13, // Adjust the zoom level
-                speed: 1.2, // Control the speed of the fly-to animation
-                curve: 1, // Control the curvature of the flight path
-                essential: true // Ensure the animation is not interrupted
+                center: coordinates, 
+                zoom: 13, 
+                speed: 1.2, 
+                curve: 1, 
+                essential: true // ensuring the animation is not interrupted
             });
 
-            // Create a popup
+            // Creating a popup
             const popup = new mapboxgl.Popup({
                 closeButton: true, // Show a close button
                 closeOnClick: false // Don't close the popup when clicking elsewhere
             })
-                .setLngLat(coordinates) // Set the popup location
-                .setHTML(`<strong>Collisions:</strong> ${count}`) // Set the popup content
-                .addTo(map); // Add the popup to the map
+                .setLngLat(coordinates) 
+                .setHTML(`<strong>Collisions:</strong> ${count}`) // Setting the popup content
+                .addTo(map);
 
-            // Zoom out when the popup is closed
+            // Zooming out when the popup is closed
             popup.on('close', () => {
                 map.flyTo({
-                    center: coordinates, // Keep the same center
-                    zoom: 10.6, // Zoom out to the original zoom level
-                    speed: 1.2, // Control the speed of the fly-to animation
-                    curve: 1, // Control the curvature of the flight path
-                    essential: true // Ensure the animation is not interrupted
+                    center: coordinates, 
+                    zoom: 10.6,
+                    speed: 1.2,
+                    curve: 1, 
+                    essential: true 
                 });
             });
         });
 
-        // Change the cursor to a pointer when hovering over the hexagon layer
+        // Change the cursor to a pointer when hovering over the hexagon to prompt interactivity
         map.on('mouseenter', 'collishexfill', () => {
             map.getCanvas().style.cursor = 'pointer';
         });
 
-        // Change the cursor back to the default when leaving the hexagon layer
+        // Change the cursor back to the default when leaving the hexagon 
         map.on('mouseleave', 'collishexfill', () => {
             map.getCanvas().style.cursor = '';
         });
     })
+    //end of the fetch code, in case fetch is unsuccessful
     .catch(error => {
         console.error('There was a problem with the fetch operation:', error);
     });

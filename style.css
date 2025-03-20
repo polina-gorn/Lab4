@@ -1,3 +1,4 @@
+/* MAP POSITION AND SIZE*/
 .map {
     position: absolute;
     top: 0;
@@ -7,7 +8,7 @@
     width: 100%;
 }
 
-/* Map container */
+/* MAP CONTAINER */
 #map {
     position: absolute;
     top: 0;
@@ -15,14 +16,13 @@
     width: 100%;
 }
 #title {
-    position: absolute;  /* Ensures the title stays on top */
-    bottom: 10px;           /* Adjust position as needed */
-    left: 10px;          /* Adjust position as needed */
-    background-color: rgba(255, 255, 255, 0.8); /*Optional: Adds a background for better visibility*/
-    /* padding: 10px 20px; */
-    /* border-radius: 8px;  Optional: Rounded corners for a cleaner look */
-    z-index: 999;        /* Ensures the title is above all layers */
+    position: absolute;  
+    bottom: 10px;         
+    left: 10px;          
+    background-color: rgba(255, 255, 255, 0.8); /*background for better visibility*/
+    z-index: 999;        /* Ensures the title is above all layers, because, when I added it without the index, it was hidden behind the map container*/
 }
+
 /* Legend */
 #legend {
     position: absolute;
@@ -31,8 +31,6 @@
     background: white;
     padding: 10px;
     border-radius: 5px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    font-family: Arial, sans-serif;
     z-index: 1000;
 }
 
@@ -54,30 +52,24 @@
     margin-right: 5px;
     border-radius: 3px;
     border: 2px solid black;
-    /* Add a black outline */
+    /* Add a border to all keys to make sure the transparent key is visible*/
 }
-
 
 .legend-label {
     font-size: 12px;
 }
 
-.legend-key[style*="rgba(255, 255, 255, 0)"] {
-    border: 1px solid #ccc;
-    /* Add a border to the transparent key */
-}
-
+/* Layer visibility enabler styling */
 #toggle-car-layer {
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: 15px;
+    left: 15px;
     padding: 10px;
     background: white;
     border: 1px solid #ccc;
     border-radius: 5px;
-    cursor: pointer;
+    cursor: pointer; /* animates the cursor to prompt button's interactivity */
     z-index: 1000;
-    font-family: Arial, sans-serif;
 }
 
 #toggle-car-layer:hover {
