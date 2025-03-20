@@ -6,3 +6,80 @@
     right: 0;
     width: 100%;
 }
+
+/* Map container */
+#map {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+}
+#title {
+    position: absolute;  /* Ensures the title stays on top */
+    bottom: 10px;           /* Adjust position as needed */
+    left: 10px;          /* Adjust position as needed */
+    background-color: rgba(255, 255, 255, 0.8); /*Optional: Adds a background for better visibility*/
+    /* padding: 10px 20px; */
+    /* border-radius: 8px;  Optional: Rounded corners for a cleaner look */
+    z-index: 999;        /* Ensures the title is above all layers */
+}
+/* Legend */
+#legend {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    font-family: Arial, sans-serif;
+    z-index: 1000;
+}
+
+#legend h4 {
+    margin: 0 0 10px;
+    font-size: 14px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.legend-key {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    border-radius: 3px;
+    border: 2px solid black;
+    /* Add a black outline */
+}
+
+
+.legend-label {
+    font-size: 12px;
+}
+
+.legend-key[style*="rgba(255, 255, 255, 0)"] {
+    border: 1px solid #ccc;
+    /* Add a border to the transparent key */
+}
+
+#toggle-car-layer {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 10px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1000;
+    font-family: Arial, sans-serif;
+}
+
+#toggle-car-layer:hover {
+    background: #f0f0f0;
+}
